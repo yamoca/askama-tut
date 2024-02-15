@@ -1,7 +1,7 @@
 use askama::Template; // bring trait in scope
-use axum::{response::Html, routing::get, Router};
+use axum::{extract::Query, response::Html, routing::get, Router};
+use serde::Deserialize;
 use tokio::net::TcpListener;
-
 
 #[derive(Template)] // this will generate the code...
 #[template(path = "hello.html")] // using the template in this path, relative
@@ -9,6 +9,11 @@ use tokio::net::TcpListener;
 struct HelloTemplate<'a> { // the name of the struct can be anything
     name: &'a str, // the field name should match the variable name
                    // in your template
+}
+
+#[derive(Deserialize)]
+struct InputQuery {
+    input: String
 }
 
 #[tokio::main]
@@ -25,6 +30,6 @@ async fn main() {
     println!("{}", hello.render().unwrap()); // then render it.
 }
 
-async fn handler() -> Html<String> {
-    return Html(HelloTemplate { name: "joe" }.render().unwrap()); 
+async fn handler(Query(myquery): Query<InputQuery>) -> Html<String> {
+    return Html(HelloTemplate { name: &myquery.input }.render().unwrap()); 
 }
